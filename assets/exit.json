@@ -1,0 +1,23 @@
+{
+  "BitmapFont": {
+    "nier-font": {
+      "file": "nier.fnt",
+      "scale": 1.0
+    }
+  },
+  "TintedDrawable": {
+    "exit_down": {
+      "name": "exit_up",
+      "color": {
+        "hex": "7b7878ff"
+      }
+    }
+  },
+  "TextButtonStyle": {
+    "default": {
+      "up": "exit_up",
+      "down": "exit_down",
+      "font": "nier-font"  // Reference your custom font here
+    }
+  }
+}
