@@ -92,7 +92,7 @@ public class Player extends Sprite {
         PolygonShape shape = new PolygonShape();
         FixtureDef fdef = new FixtureDef();
         Rectangle rect = new Rectangle();
-        rect.setSize(5);
+        rect.setSize(15);
         
         shape.setAsBox(rect.getWidth() / 2 / TheaterDungeon.PPM, rect.getHeight() / 2 / TheaterDungeon.PPM);
         fdef.shape = shape;
@@ -168,10 +168,6 @@ public class Player extends Sprite {
    
     
 
-
-
-
-
     private void jump() {
         if (isGrounded()) {
             b2body.applyLinearImpulse(new Vector2(0, jumpForce), b2body.getWorldCenter(), true);
@@ -222,8 +218,10 @@ public class Player extends Sprite {
                 y - (currentFrame.getRegionHeight() * scale) / 2,
                 currentFrame.getRegionWidth() * scale, 
                 currentFrame.getRegionHeight() * scale);
-        setOrigin(currentFrame.getRegionWidth() * scale / 2, currentFrame.getRegionHeight() * scale / 2);
+        
+        System.out.println((x - (currentFrame.getRegionWidth() * scale) / 2)+(y - (currentFrame.getRegionHeight() * scale) / 2));
     }
+    
     
 
     public void dispose() {

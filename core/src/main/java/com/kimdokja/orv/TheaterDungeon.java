@@ -10,7 +10,7 @@
 	
 	import Screens.Level1Screen;
 	import Screens.MenuScreen;
-	import Screens.PlayScreen;
+	
 	
 	/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 	public class TheaterDungeon extends Game {
