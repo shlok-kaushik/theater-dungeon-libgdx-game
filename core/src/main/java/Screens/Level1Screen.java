@@ -3,6 +3,7 @@ package Screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -31,6 +32,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kimdokja.orv.TheaterDungeon;
@@ -76,13 +78,17 @@ public class Level1Screen implements Screen, ContactListener {
     private boolean showBlackScreen = false; 
     private float blackScreenTime = 0;      
     private float blackScreenDuration = 0.4f;   
-
+    private Sound bg;
     public Level1Screen(TheaterDungeon game) {
         this.game = game;
         gamecam = new OrthographicCamera();
         gameport = new FitViewport(TheaterDungeon.V_WIDTH / TheaterDungeon.PPM, TheaterDungeon.V_HEIGHT / TheaterDungeon.PPM, gamecam);
         gamecam.zoom = zoom;
         
+        bg = Gdx.audio.newSound(Gdx.files.internal("gamebg.ogg"));
+        
+        bg.play();
+        bg.loop();
         batch = new SpriteBatch();
         maploader = new TmxMapLoader();
         map = maploader.load("maps/map1/level1.tmx");
@@ -97,6 +103,8 @@ public class Level1Screen implements Screen, ContactListener {
         // Create ground and wall bodies
         createGroundAndWalls();
         world.setContactListener(this);
+        
+        
     }
     @Override
     public void beginContact(Contact contact) {
@@ -138,7 +146,7 @@ public class Level1Screen implements Screen, ContactListener {
 
     // Method to reset the player's position
     private void resetPlayerPosition() {
-        playerBody.setTransform(100 / TheaterDungeon.PPM, 300 / TheaterDungeon.PPM, 0); // Reset to initial position
+        playerBody.setTransform(100 / TheaterDungeon.PPM, 300 / TheaterDungeon.PPM, 0); 
         playerBody.setLinearVelocity(0, 0); // Reset velocity
     }
 
@@ -202,9 +210,11 @@ public class Level1Screen implements Screen, ContactListener {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
         if (resetPlayerPositionFlag && !showBlackScreen) {
-            showBlackScreen = true;            // Start the black screen
+            showBlackScreen = true; 
+            						// Start the black screen
             blackScreenTime = 0;               // Reset the timer
-            resetPlayerPositionFlag = false;   // Clear the reset flag
+            resetPlayerPositionFlag = false;   
+            // Clear the reset flag
         }
 
         // If the black screen is showing, update the timer
@@ -212,7 +222,9 @@ public class Level1Screen implements Screen, ContactListener {
             blackScreenTime += dt;
             if (blackScreenTime >= blackScreenDuration) {
                 resetPlayerPosition();          // Reset the player's position after the black screen
-                showBlackScreen = false;        // Stop showing the black screen
+                showBlackScreen = false;  
+                if(isGravityFlipped) {flipGravity();}
+                // Stop showing the black screen
             }
         }
         if (isGrounded()) {
@@ -384,7 +396,7 @@ private boolean isGrounded() {
         update(delta);
         
         renderer.render();
-
+        
         batch.setProjectionMatrix(gamecam.combined);
         batch.begin();
         if(!showBlackScreen) {
@@ -476,5 +488,6 @@ private boolean isGrounded() {
         b2dr.dispose();
         atlas.dispose();
         batch.dispose();
+        bg.dispose();
     }
 }
