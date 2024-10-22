@@ -51,9 +51,9 @@ public class Level1Screen implements Screen, ContactListener {
     private Box2DDebugRenderer b2dr;
 
     private Body playerBody; // Player's Box2D body
-    private TextureAtlas atlas; 
-    private TextureAtlas jump;// TextureAtlas for player animations
-    private Animation<TextureRegion> idleAnimation, walkAnimation, jumpAnimation;
+    private TextureAtlas atlas,jump,dash; 
+    
+    private Animation<TextureRegion> idleAnimation, walkAnimation, jumpAnimation , dashAnimation;
    
     private float stateTime;
     private boolean isWalking;
@@ -62,20 +62,21 @@ public class Level1Screen implements Screen, ContactListener {
     
     // Player parameters
     private float jumpForce = 7f;
-    private float dashSpeed = 3f;
-    private float dashDuration = 0.08f;
+    private float dashSpeed = 10f;
+    private float dashDuration = 0.3f;
     private float fallMultiplier = 2.5f;
     private float lowJumpMultiplier = 2f;
     private float lastDashTime = 0;
     private float dashCooldown = 0.5f;
-
+    
     private float scale = 0.1f;
     private float zoom = 0.3f;
-    private float gravityStrength = 5f;
+    private float gravityStrength = 3f;
     private boolean facingLeft;
     private boolean isGravityFlipped = false;
     private boolean resetPlayerPositionFlag = false;
     private boolean showBlackScreen = false; 
+    private boolean wasInAirLastFrame = false;
     private float blackScreenTime = 0;      
     private float blackScreenDuration = 0.4f;   
     private Sound bg;
@@ -167,10 +168,11 @@ public class Level1Screen implements Screen, ContactListener {
         // Load animations
         atlas = new TextureAtlas(Gdx.files.internal("Spritesheets/main_character/idle_walk.atlas"));
         jump = new TextureAtlas(Gdx.files.internal("Spritesheets/main_character/jump.atlas"));
+        dash = new TextureAtlas(Gdx.files.internal("Spritesheets/main_character/dash.atlas"));
         jumpAnimation = new Animation<>(0.1f, jump.findRegion("jump1"), jump.findRegion("jump2"), jump.findRegion("jump3"), jump.findRegion("jump4"));
         idleAnimation = new Animation<>(0.1f, atlas.findRegion("idle1"), atlas.findRegion("idle2"), atlas.findRegion("idle3"), atlas.findRegion("idle4"));
         walkAnimation = new Animation<>(0.1f, atlas.findRegion("walk1"), atlas.findRegion("walk2"), atlas.findRegion("walk3"), atlas.findRegion("walk4"));
-        
+        dashAnimation = new Animation<>(0.1f,dash.findRegion("Kim dash7"),dash.findRegion("Kim dash8"));
         stateTime = 0f;
         isWalking = false;
         isJumping = false;
@@ -231,6 +233,12 @@ public class Level1Screen implements Screen, ContactListener {
         	Vector2 velocity = playerBody.getLinearVelocity();
         	playerBody.setLinearVelocity(velocity.x,0);
         }
+        if (isGrounded() && wasInAirLastFrame) {
+            playerBody.setLinearVelocity(0, playerBody.getLinearVelocity().y); // Stop horizontal velocity on landing
+            wasInAirLastFrame = false;
+        } else if (!isGrounded()) {
+            wasInAirLastFrame = true;
+        }
         // Update player position
         stateTime += dt;
         isWalking = Math.abs(playerBody.getLinearVelocity().x) > 0;
@@ -289,7 +297,7 @@ public class Level1Screen implements Screen, ContactListener {
     }
 
     private void handleInput(float deltaTime) {
-        // Jump
+        // jumppppp
     	 if (isDashing) {
     	        return; // Ignore input if dashing
     	    }
@@ -382,11 +390,34 @@ private boolean isGrounded() {
     }
 
     private void dash() {
-        Vector2 velocity = playerBody.getLinearVelocity();
-        playerBody.setLinearVelocity(velocity.x * dashSpeed, velocity.y);
+        Vector2 dashDirection = new Vector2(0, 0);
+
+        // Check for input to determine dash direction
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+            dashDirection.y = 1; // Up
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+            dashDirection.y = -1; // Down
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            dashDirection.x = -1; // Left
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+            dashDirection.x = 1; // Right
+        }
+
+        // Normalize direction vector to avoid faster diagonal dashes
+        if (dashDirection.len() > 0) {
+            dashDirection.nor();
+        }
+
+        // Apply dash speed in the calculated direction
+        playerBody.setLinearVelocity(dashDirection.scl(dashSpeed));
+
         isDashing = true;
-        lastDashTime = 0;
+        lastDashTime = 0;  // Reset dash cooldown
     }
+
    
     @Override
     public void render(float delta) {
@@ -403,7 +434,7 @@ private boolean isGrounded() {
         // Draw player
         TextureRegion currentFrame;
         if (isDashing) {
-            currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+            currentFrame = dashAnimation.getKeyFrame(stateTime, true);
         } else if (!isGrounded()) {
             currentFrame = jumpAnimation.getKeyFrame(stateTime, false);
         } else if (isWalking) {

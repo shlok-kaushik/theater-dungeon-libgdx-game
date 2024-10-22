@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="200" height="50" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="10">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="200" height="50" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="13">
  <tileset firstgid="1" source="clouds.tsx"/>
  <tileset firstgid="25" source="tileset.tsx"/>
  <tileset firstgid="1185" source="skye.tsx"/>
@@ -170,8 +170,11 @@
   <object id="2" x="305.333" y="654.667" width="94" height="32.6667"/>
   <object id="4" x="401.333" y="606.667" width="141.333" height="31.3333"/>
   <object id="5" x="400.667" y="607.333" width="30.6667" height="78.6667"/>
+  <object id="10" x="0" y="-9.33333" width="26.6667" height="820"/>
+  <object id="11" x="3166.67" y="-12" width="26.6667" height="820"/>
  </objectgroup>
  <objectgroup id="5" name="reset">
   <object id="8" x="0" y="793.939" width="3184.85" height="12.1212"/>
+  <object id="12" x="1.575" y="1.9394" width="3184.85" height="12.1212"/>
  </objectgroup>
 </map>
