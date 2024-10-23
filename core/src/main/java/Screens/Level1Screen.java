@@ -71,7 +71,7 @@ public class Level1Screen implements Screen, ContactListener {
     
     private float scale = 0.1f;
     private float zoom = 0.3f;
-    private float gravityStrength = 3f;
+    private float gravityStrength = 8f;
     private boolean facingLeft;
     private boolean isGravityFlipped = false;
     private boolean resetPlayerPositionFlag = false;
@@ -88,7 +88,8 @@ public class Level1Screen implements Screen, ContactListener {
         
         bg = Gdx.audio.newSound(Gdx.files.internal("gamebg.ogg"));
         
-        bg.play();
+        long soundid = bg.play();
+        bg.setVolume(soundid, 0.2f);
         bg.loop();
         batch = new SpriteBatch();
         maploader = new TmxMapLoader();
@@ -185,7 +186,7 @@ public class Level1Screen implements Screen, ContactListener {
         Body body;
 
         // Create ground bodies and fixtures
-        for (MapObject object : map.getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
+        for (MapObject object : map.getLayers().get(4).getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
             bdef.type = BodyDef.BodyType.StaticBody;
             bdef.position.set((rect.getX() + rect.getWidth() / 2) / TheaterDungeon.PPM, (rect.getY() + rect.getHeight() / 2) / TheaterDungeon.PPM);
@@ -195,7 +196,7 @@ public class Level1Screen implements Screen, ContactListener {
             body.createFixture(fdef);
         }
         // reset surface 
-        for (MapObject object : map.getLayers().get(4).getObjects().getByType(RectangleMapObject.class)) {
+        for (MapObject object : map.getLayers().get(5).getObjects().getByType(RectangleMapObject.class)) {
             Rectangle reset = ((RectangleMapObject) object).getRectangle();
             bdef.type = BodyDef.BodyType.StaticBody;
             bdef.position.set((reset.getX() + reset.getWidth() / 2) / TheaterDungeon.PPM, (reset.getY() + reset.getHeight() / 2) / TheaterDungeon.PPM);
@@ -218,7 +219,7 @@ public class Level1Screen implements Screen, ContactListener {
             resetPlayerPositionFlag = false;   
             // Clear the reset flag
         }
-
+        System.out.println(world.getGravity());
         // If the black screen is showing, update the timer
         if (showBlackScreen) {
             blackScreenTime += dt;
@@ -252,7 +253,7 @@ public class Level1Screen implements Screen, ContactListener {
             playerBody.applyForceToCenter(new Vector2(0, gravityStrength), true);
         } else {
             // Apply normal downward gravity
-            playerBody.applyForceToCenter(new Vector2(0, -gravityStrength), true);
+            playerBody.applyForceToCenter(new Vector2(0, -3), true);
         }
         
         // Better jumping mechanics
@@ -362,7 +363,7 @@ public class Level1Screen implements Screen, ContactListener {
             world.setGravity(new Vector2(0, gravityStrength)); // Set gravity upwards
         } else {
             playerBody.applyLinearImpulse(new Vector2(0, -10f), playerBody.getWorldCenter(), true); // Apply downward impulse
-            world.setGravity(new Vector2(0, -gravityStrength)); // Set gravity downwards
+            world.setGravity(new Vector2(0, -10)); // Set gravity downwards
         }
     }
 
