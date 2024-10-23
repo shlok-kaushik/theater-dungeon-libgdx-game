@@ -1,5 +1,7 @@
 package Screens;
 
+import java.util.Random;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -68,6 +70,8 @@ public class Level1Screen implements Screen, ContactListener {
     private float lowJumpMultiplier = 2f;
     private float lastDashTime = 0;
     private float dashCooldown = 0.5f;
+    private float stepInterval = 0.3f; // Interval between footsteps
+    private float timeSinceLastStep = 0;
     
     private float scale = 0.1f;
     private float zoom = 0.3f;
@@ -80,6 +84,13 @@ public class Level1Screen implements Screen, ContactListener {
     private float blackScreenTime = 0;      
     private float blackScreenDuration = 0.4f;   
     private Sound bg;
+    private Sound dashh;
+    private Sound jumpp;
+    private Sound death;
+    private Sound revive;
+    
+    private Sound[] footstepSounds;
+    private Random random;
     public Level1Screen(TheaterDungeon game) {
         this.game = game;
         gamecam = new OrthographicCamera();
@@ -87,6 +98,10 @@ public class Level1Screen implements Screen, ContactListener {
         gamecam.zoom = zoom;
         
         bg = Gdx.audio.newSound(Gdx.files.internal("gamebg.ogg"));
+        dashh = Gdx.audio.newSound(Gdx.files.internal("sounds/dash.wav"));
+        jumpp = Gdx.audio.newSound(Gdx.files.internal("sounds/jump.wav"));
+        revive = Gdx.audio.newSound(Gdx.files.internal("sounds/revive.wav"));
+        death = Gdx.audio.newSound(Gdx.files.internal("sounds/predeath.wav"));
         
         long soundid = bg.play();
         bg.setVolume(soundid, 0.2f);
@@ -105,6 +120,13 @@ public class Level1Screen implements Screen, ContactListener {
         // Create ground and wall bodies
         createGroundAndWalls();
         world.setContactListener(this);
+        footstepSounds = new Sound[3];
+        for (int i = 0; i < 3; i++) {
+            footstepSounds[i] = Gdx.audio.newSound(Gdx.files.internal("sounds/foot_00_dirt_0" + (i + 1) + ".wav"));
+        }
+        random = new Random();
+        
+        
         
         
     }
@@ -115,7 +137,8 @@ public class Level1Screen implements Screen, ContactListener {
 
         // Check if one of the fixtures is the player and the other is the reset surface
         if (isPlayer(fixtureA) && isResetSurface(fixtureB)) {
-            resetPlayerPositionFlag = true; // Set flag to reset position
+        	death.play();
+            resetPlayerPositionFlag = true;// Set flag to reset position
         } else if (isPlayer(fixtureB) && isResetSurface(fixtureA)) {
             resetPlayerPositionFlag = true; // Set flag to reset position
         }
@@ -148,6 +171,7 @@ public class Level1Screen implements Screen, ContactListener {
 
     // Method to reset the player's position
     private void resetPlayerPosition() {
+    	revive.play();
         playerBody.setTransform(100 / TheaterDungeon.PPM, 300 / TheaterDungeon.PPM, 0); 
         playerBody.setLinearVelocity(0, 0); // Reset velocity
     }
@@ -207,7 +231,11 @@ public class Level1Screen implements Screen, ContactListener {
             body2.setUserData("resetSurface"); // Assign user data
         }
     }
-        
+    private void playFootstepSound() {
+        // Randomly select one of the 7 footstep sounds
+        int soundIndex = random.nextInt(footstepSounds.length);
+        footstepSounds[soundIndex].play();
+    }    
 
     public void update(float dt) {
         handleInput(dt);
@@ -243,6 +271,18 @@ public class Level1Screen implements Screen, ContactListener {
         // Update player position
         stateTime += dt;
         isWalking = Math.abs(playerBody.getLinearVelocity().x) > 0;
+        if (isWalking) {
+            timeSinceLastStep += dt;
+            if (timeSinceLastStep >= stepInterval) {
+                playFootstepSound();
+                timeSinceLastStep = 0; // Reset the timer for the next step
+            }
+        } else {
+            // Reset the step timer when not moving
+            timeSinceLastStep = 0;
+        }
+        
+    
         if (playerBody.getLinearVelocity().y > 0) {
             isJumping = true; // Set jumping state
         } else if (playerBody.getLinearVelocity().y < 0) {
@@ -277,6 +317,7 @@ public class Level1Screen implements Screen, ContactListener {
 
         // Manage dashing
         if (isDashing) {
+        	
             dashDuration -= dt;
             if (dashDuration <= 0) {
                 isDashing = false; // End the dash
@@ -379,6 +420,7 @@ private boolean isGrounded() {
     return callback.isGrounded;
 }
     private void jump() {
+    	jumpp.play();
     	float jumpForceApplied = isGravityFlipped ? -jumpForce  : jumpForce;
         playerBody.applyLinearImpulse(new Vector2(0, jumpForceApplied), playerBody.getWorldCenter(), true);
         isJumping = true; // Set jumping state
@@ -391,6 +433,7 @@ private boolean isGrounded() {
     }
 
     private void dash() {
+    	dashh.play();
         Vector2 dashDirection = new Vector2(0, 0);
 
         // Check for input to determine dash direction
@@ -492,7 +535,7 @@ private boolean isGrounded() {
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);  // Clear the screen to black
         }
         batch.end();
-        b2dr.render(world, gamecam.combined);
+        //b2dr.render(world, gamecam.combined);
     }
 
     @Override
@@ -514,12 +557,20 @@ private boolean isGrounded() {
 
     @Override
     public void dispose() {
+    	batch.dispose();
         map.dispose();
         renderer.dispose();
         world.dispose();
-        b2dr.dispose();
         atlas.dispose();
-        batch.dispose();
+        jump.dispose();
+        dash.dispose();
         bg.dispose();
+        dashh.dispose();
+        jumpp.dispose();
+        death.dispose();
+        revive.dispose();
+        for (Sound sound : footstepSounds) {
+            sound.dispose();
+        }
     }
 }
