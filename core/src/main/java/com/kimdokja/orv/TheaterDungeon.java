@@ -30,8 +30,8 @@
 	    public void create() {
 	        Gdx.graphics.setWindowedMode(V_WIDTH, V_HEIGHT); // Set the windowed mode to your desired resolution
 	        batch = new SpriteBatch();
-	       //setScreen(new MenuScreen(this)); // Start with the MenuScreen
-	    setScreen(new Level1Screen(this));
+	       setScreen(new MenuScreen(this)); // Start with the MenuScreen
+	       //setScreen(new Level1Screen(this));
 	        
 	    }
 	    public boolean isCutsceneActive() {
