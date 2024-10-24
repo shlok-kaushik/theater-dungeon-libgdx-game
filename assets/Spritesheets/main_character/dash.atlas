@@ -1,18 +1,25 @@
 dash.png
-size: 1280, 640
+size: 1920, 640
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-Kim dash7
+Kim dashnew2
   rotate: false
   xy: 0, 0
   size: 640, 640
   orig: 640, 640
   offset: 0, 0
   index: -1
-Kim dash8
+Kim dashnew3
   rotate: false
   xy: 640, 0
+  size: 640, 640
+  orig: 640, 640
+  offset: 0, 0
+  index: -1
+Kim dashnew4
+  rotate: false
+  xy: 1280, 0
   size: 640, 640
   orig: 640, 640
   offset: 0, 0

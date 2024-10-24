@@ -11,7 +11,7 @@ import com.kimdokja.orv.TheaterDungeon;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CutsceneScreen implements Screen {
+public class CutsceneScreen2 implements Screen {
     private TheaterDungeon game;
     private SpriteBatch batch;
     private BitmapFont font;
@@ -29,7 +29,7 @@ public class CutsceneScreen implements Screen {
     private static final float LINE_SPACING = 40;
     private static final float FINISHED_LINE_SPACING = 20;// Spacing between lines
 
-    public CutsceneScreen(TheaterDungeon game) {
+    public CutsceneScreen2(TheaterDungeon game) {
         this.game = game;
         batch = new SpriteBatch();
         font = new BitmapFont(Gdx.files.internal("nier.fnt"), Gdx.files.internal("nier.png"), false);
@@ -39,23 +39,21 @@ public class CutsceneScreen implements Screen {
         // Initialize dialogue sets
         dialogues = new String[][] {
             {
-                "[There are three ways to survive in a ruined world.",
-                "Now, I have forgotten a few, but one thing is certain.",
-                "The fact that you who are reading this now will survive.",
-                "-Three ways to survive in a ruined world]"
+                "This was Supposed to be a movie based level",
+                "why was I in a platformer game?",
             },
             {
-            	"The novel I read for 10 years was over.",
-                " It was a story about a man who regressed 1863 times.",
-                "There is just one small issue now",
+            	"[The developer could not implement",
+            	"what they had planned for this game]",
+            	"Sounds like skill issue",
+            	"return me to the main menu",
+            	
 
                 
             },
             {
-            	"The story had become real, and the protagonist is about to"," die again ",
-            	"This world will most probably end with the protagonist moving ","on to the next worldline",
-            	"I must enter this dungeon to stop that from happening.",
-
+            	"[Affirmative]",
+            	
             }
         };
         
@@ -149,7 +147,7 @@ public class CutsceneScreen implements Screen {
                     displayedLines.clear(); // Clear previously displayed lines
                 } else {
                 	dispose();
-                    FadeScreen fadeScreen = new FadeScreen(game, new Level1Screen(game));
+                    FadeScreen fadeScreen = new FadeScreen(game, new MenuScreen(game));
                     game.setScreen(fadeScreen); // Transition to the gameplay screen after all dialogues
                 }
             }

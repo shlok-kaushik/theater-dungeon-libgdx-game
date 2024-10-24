@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -38,6 +39,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kimdokja.orv.TheaterDungeon;
+
 
 
 public class Level1Screen implements Screen, ContactListener {
@@ -88,7 +90,7 @@ public class Level1Screen implements Screen, ContactListener {
     private Sound jumpp;
     private Sound death;
     private Sound revive;
-    
+    private BitmapFont font;
     private Sound[] footstepSounds;
     private Random random;
     public Level1Screen(TheaterDungeon game) {
@@ -102,6 +104,7 @@ public class Level1Screen implements Screen, ContactListener {
         jumpp = Gdx.audio.newSound(Gdx.files.internal("sounds/jump.wav"));
         revive = Gdx.audio.newSound(Gdx.files.internal("sounds/revive.wav"));
         death = Gdx.audio.newSound(Gdx.files.internal("sounds/predeath.wav"));
+        font = new BitmapFont(Gdx.files.internal("nier.fnt"));
         
         long soundid = bg.play();
         bg.setVolume(soundid, 0.2f);
@@ -114,7 +117,7 @@ public class Level1Screen implements Screen, ContactListener {
         world = new World(new Vector2(0, -10), true);
         b2dr = new Box2DDebugRenderer();
         //gravityStrength = world.getGravity().y;
-       
+        
         initializePlayer();
 
         // Create ground and wall bodies
@@ -141,6 +144,15 @@ public class Level1Screen implements Screen, ContactListener {
             resetPlayerPositionFlag = true;// Set flag to reset position
         } else if (isPlayer(fixtureB) && isResetSurface(fixtureA)) {
             resetPlayerPositionFlag = true; // Set flag to reset position
+        }
+        if (isPlayer(fixtureA) && isExitSurface(fixtureB)) {
+            // Change to the new screen (e.g., the next level)
+        	game.setScreen(new FadeScreen(game, new CutsceneScreen2(game))); 
+        	
+        } else if (isPlayer(fixtureB) && isExitSurface(fixtureA)) {
+            // Change to the new screen (e.g., the next level)
+        	game.setScreen(new FadeScreen(game, new CutsceneScreen2(game)));
+        	
         }
     }
 
@@ -175,6 +187,9 @@ public class Level1Screen implements Screen, ContactListener {
         playerBody.setTransform(100 / TheaterDungeon.PPM, 300 / TheaterDungeon.PPM, 0); 
         playerBody.setLinearVelocity(0, 0); // Reset velocity
     }
+    private boolean isExitSurface(Fixture fixture) {
+        return fixture.getBody().getUserData() != null && fixture.getBody().getUserData().equals("exit");
+    }
 
     
 
@@ -197,7 +212,7 @@ public class Level1Screen implements Screen, ContactListener {
         jumpAnimation = new Animation<>(0.1f, jump.findRegion("jump1"), jump.findRegion("jump2"), jump.findRegion("jump3"), jump.findRegion("jump4"));
         idleAnimation = new Animation<>(0.1f, atlas.findRegion("idle1"), atlas.findRegion("idle2"), atlas.findRegion("idle3"), atlas.findRegion("idle4"));
         walkAnimation = new Animation<>(0.1f, atlas.findRegion("walk1"), atlas.findRegion("walk2"), atlas.findRegion("walk3"), atlas.findRegion("walk4"));
-        dashAnimation = new Animation<>(0.1f,dash.findRegion("Kim dash7"),dash.findRegion("Kim dash8"));
+        dashAnimation = new Animation<>(0.1f,dash.findRegion("Kim dashnew2"),dash.findRegion("Kim dashnew3"),dash.findRegion("Kim dashnew4"));
         stateTime = 0f;
         isWalking = false;
         isJumping = false;
@@ -230,7 +245,20 @@ public class Level1Screen implements Screen, ContactListener {
             body2.createFixture(fdef);
             body2.setUserData("resetSurface"); // Assign user data
         }
+        for (MapObject object : map.getLayers().get(6).getObjects().getByType(RectangleMapObject.class)) {
+            Rectangle reset = ((RectangleMapObject) object).getRectangle();
+            bdef.type = BodyDef.BodyType.StaticBody;
+            bdef.position.set((reset.getX() + reset.getWidth() / 2) / TheaterDungeon.PPM, (reset.getY() + reset.getHeight() / 2) / TheaterDungeon.PPM);
+            Body body3 = world.createBody(bdef);
+            shape.setAsBox(reset.getWidth() / 2 / TheaterDungeon.PPM, reset.getHeight() / 2 / TheaterDungeon.PPM);
+            fdef.shape = shape;
+            body3.createFixture(fdef);
+            body3.setUserData("exit"); // Assign user data
+        }
+        
+        
     }
+   
     private void playFootstepSound() {
         // Randomly select one of the 7 footstep sounds
         int soundIndex = random.nextInt(footstepSounds.length);
@@ -308,7 +336,7 @@ public class Level1Screen implements Screen, ContactListener {
         } else {
             if (playerBody.getLinearVelocity().y < 0) {
                 // Apply downward fall multiplier when falling
-                playerBody.applyLinearImpulse(new Vector2(0, -fallMultiplier * 9.8f * dt), playerBody.getWorldCenter(), true);
+                playerBody.applyLinearImpulse(new Vector2(0, -1f * 9.8f * dt), playerBody.getWorldCenter(), true);
             } else if (playerBody.getLinearVelocity().y > 0 && !Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
                 // Apply low jump multiplier if jump button is released
                 playerBody.applyLinearImpulse(new Vector2(0, -lowJumpMultiplier * 9.8f * dt), playerBody.getWorldCenter(), true);
@@ -341,6 +369,9 @@ public class Level1Screen implements Screen, ContactListener {
     private void handleInput(float deltaTime) {
         // jumppppp
     	 if (isDashing) {
+    		 if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+    	    		flipGravity(); // Toggle gravity
+    	        }
     	        return; // Ignore input if dashing
     	    }
     	if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
@@ -569,6 +600,7 @@ private boolean isGrounded() {
         jumpp.dispose();
         death.dispose();
         revive.dispose();
+        font.dispose();
         for (Sound sound : footstepSounds) {
             sound.dispose();
         }
